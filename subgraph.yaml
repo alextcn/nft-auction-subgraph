@@ -1,0 +1,60 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: Auction
+    network: goerli
+    source:
+      address: "0x87A80f94ec8F3E007F185e7DaB6C1ef4ca37110b"
+      abi: Auction
+      startBlock: 5543350
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - AdminChanged
+        - AuctionCanceled
+        - AuctionCreated
+        - AuctionDurationSet
+        - AuthorRoyaltyNumeratorSet
+        - BidSubmitted
+        - MinPriceStepNumeratorSet
+        - OvertimeWindowSet
+        - Paused
+        - ReservePriceChanged
+        - RoyaltyPaid
+        - Unpaused
+        - WonNftClaimed
+      abis:
+        - name: Auction
+          file: ./abis/Auction.json
+      eventHandlers:
+        - event: AdminChanged(address)
+          handler: handleAdminChanged
+        - event: AuctionCanceled(indexed address,indexed uint256,indexed address)
+          handler: handleAuctionCanceled
+        - event: AuctionCreated(indexed address,indexed uint256,indexed address,uint256)
+          handler: handleAuctionCreated
+        - event: AuctionDurationSet(uint40)
+          handler: handleAuctionDurationSet
+        - event: AuthorRoyaltyNumeratorSet(uint256)
+          handler: handleAuthorRoyaltyNumeratorSet
+        - event: BidSubmitted(indexed address,indexed uint256,indexed address,uint256,uint40)
+          handler: handleBidSubmitted
+        - event: MinPriceStepNumeratorSet(uint256)
+          handler: handleMinPriceStepNumeratorSet
+        - event: OvertimeWindowSet(uint40)
+          handler: handleOvertimeWindowSet
+        - event: Paused(address)
+          handler: handlePaused
+        - event: ReservePriceChanged(indexed address,indexed uint256,uint256,indexed address)
+          handler: handleReservePriceChanged
+        - event: RoyaltyPaid(indexed address,indexed uint256,indexed address,uint256)
+          handler: handleRoyaltyPaid
+        - event: Unpaused(address)
+          handler: handleUnpaused
+        - event: WonNftClaimed(indexed address,indexed uint256,indexed address,address)
+          handler: handleWonNftClaimed
+      file: ./src/mapping.ts
