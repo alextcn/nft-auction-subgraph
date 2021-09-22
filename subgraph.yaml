@@ -31,30 +31,31 @@ dataSources:
         - name: Auction
           file: ./abis/Auction.json
       eventHandlers:
-        - event: AdminChanged(address)
-          handler: handleAdminChanged
-        - event: AuctionCanceled(indexed address,indexed uint256,indexed address)
-          handler: handleAuctionCanceled
         - event: AuctionCreated(indexed address,indexed uint256,indexed address,uint256)
           handler: handleAuctionCreated
-        - event: AuctionDurationSet(uint40)
-          handler: handleAuctionDurationSet
-        - event: AuthorRoyaltyNumeratorSet(uint256)
-          handler: handleAuthorRoyaltyNumeratorSet
+        - event: AuctionCanceled(indexed address,indexed uint256,indexed address)
+          handler: handleAuctionCanceled
         - event: BidSubmitted(indexed address,indexed uint256,indexed address,uint256,uint40)
           handler: handleBidSubmitted
-        - event: MinPriceStepNumeratorSet(uint256)
-          handler: handleMinPriceStepNumeratorSet
-        - event: OvertimeWindowSet(uint40)
-          handler: handleOvertimeWindowSet
-        - event: Paused(address)
-          handler: handlePaused
         - event: ReservePriceChanged(indexed address,indexed uint256,uint256,indexed address)
           handler: handleReservePriceChanged
-        - event: RoyaltyPaid(indexed address,indexed uint256,indexed address,uint256)
-          handler: handleRoyaltyPaid
-        - event: Unpaused(address)
-          handler: handleUnpaused
         - event: WonNftClaimed(indexed address,indexed uint256,indexed address,address)
           handler: handleWonNftClaimed
+      # eventHandlers:
+      #   - event: AdminChanged(address)
+      #     handler: handleAdminChanged
+      #   - event: AuctionDurationSet(uint40)
+      #     handler: handleAuctionDurationSet
+      #   - event: AuthorRoyaltyNumeratorSet(uint256)
+      #     handler: handleAuthorRoyaltyNumeratorSet
+      #   - event: MinPriceStepNumeratorSet(uint256)
+      #     handler: handleMinPriceStepNumeratorSet
+      #   - event: OvertimeWindowSet(uint40)
+      #     handler: handleOvertimeWindowSet
+      #   - event: Paused(address)
+      #     handler: handlePaused
+      #   - event: RoyaltyPaid(indexed address,indexed uint256,indexed address,uint256)
+      #     handler: handleRoyaltyPaid
+      #   - event: Unpaused(address)
+      #     handler: handleUnpaused
       file: ./src/mapping.ts
