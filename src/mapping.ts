@@ -36,7 +36,7 @@ export function handleAuctionCreated(event: AuctionCreated): void {
   listing.startPrice = event.params.startPrice
   listing.save()
 
-  createAction(event, listing.id, user.id, nft.id, 'List')
+  createAction(event, listing.id, user.id, nft.id, 'List', event.params.startPrice)
 }
 
 export function handleAuctionCanceled(event: AuctionCanceled): void {
@@ -50,7 +50,7 @@ export function handleAuctionCanceled(event: AuctionCanceled): void {
   listing.status = 'Cancelled'
   listing.save()
 
-  createAction(event, listing.id, user.id, nftId, 'Cancel')
+  createAction(event, listing.id, user.id, nftId, 'Cancel', null)
 }
 
 export function handleBidSubmitted(event: BidSubmitted): void {
@@ -66,7 +66,7 @@ export function handleBidSubmitted(event: BidSubmitted): void {
   listing.save()
 
   // TODO: add price value
-  createAction(event, listing.id, bidder.id, nftId, 'Bid')
+  createAction(event, listing.id, bidder.id, nftId, 'Bid', event.params.amount)
 }
 
 export function handleReservePriceChanged(event: ReservePriceChanged): void {
@@ -79,7 +79,7 @@ export function handleReservePriceChanged(event: ReservePriceChanged): void {
   listing.save()
 
   // TODO: add price value
-  createAction(event, listing.id, user.id, nftId, 'UpdateStartPrice')
+  createAction(event, listing.id, user.id, nftId, 'UpdateStartPrice', event.params.startPrice)
 }
 
 export function handleWonNftClaimed(event: WonNftClaimed): void {
@@ -94,7 +94,7 @@ export function handleWonNftClaimed(event: WonNftClaimed): void {
 
   // TODO: add price value
   const winnerId = getUserId(event.params.winner)
-  createAction(event, listing.id, winnerId, nftId, 'Claim')
+  createAction(event, listing.id, winnerId, nftId, 'Claim', null)
 }
 
 
@@ -139,12 +139,13 @@ function createNft(nftAddress: Address, tokenId: BigInt): NFT {
 
 // create and saves Action entity
 function createAction(event: ethereum.Event, listingId: string, nftId: string, 
-  userId: string, actionType: string): void {
+  userId: string, actionType: string, value: BigInt | null): void {
   const action = new Action(event.transaction.hash.toHex())
   action.user = userId
   action.nft = nftId
   action.listing = listingId
   action.type = actionType
+  action.value = value
   action.blockNumber = event.block.number
   action.timestamp = event.block.timestamp
   action.save()

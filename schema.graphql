@@ -43,6 +43,8 @@ type Action @entity {
   listing: Listing!
 
   type: ActionType!
+  value: BigInt # may have different meaning across action types
+
   blockNumber: BigInt!
   timestamp: BigInt!
 }
