@@ -3,8 +3,11 @@ type ActiveListingID @entity {
   listingId: ID!
 }
 
+enum ListingStatus { Created Active Cancelled Finished }
+
 type Listing @entity {
   id: ID!
+  status: ListingStatus!
 
   nft: Bytes!
   nftId: BigInt!

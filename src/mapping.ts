@@ -26,6 +26,7 @@ export function handleAuctionCreated(event: AuctionCreated): void {
   _id.save()
 
   const listing = new Listing(id)
+  listing.status = 'Created'
   listing.nft = event.params.nft
   listing.nftId = event.params.nftId
   listing.author = event.transaction.from
@@ -38,7 +39,10 @@ export function handleAuctionCanceled(event: AuctionCanceled): void {
   if (id === null) return
 
   store.remove('ActiveListingID', alid(event.params.nft, event.params.nftId))
-  store.remove('Listing', id)
+
+  const listing = new Listing(id)
+  listing.status = 'Cancelled'
+  listing.save()
 }
 
 export function handleBidSubmitted(event: BidSubmitted): void {
@@ -46,6 +50,7 @@ export function handleBidSubmitted(event: BidSubmitted): void {
   if (id === null) return
   
   const listing = new Listing(id)
+  listing.status = 'Active'
   listing.bidder = event.params.bidder
   listing.bid = event.params.amount
   listing.endTimestamp = event.params.endTimestamp
@@ -66,7 +71,10 @@ export function handleWonNftClaimed(event: WonNftClaimed): void {
   if (id === null) return
   
   store.remove('ActiveListingID', alid(event.params.nft, event.params.nftId))
-  store.remove('Listing', id)
+  
+  const listing = new Listing(id)
+  listing.status = 'Finished'
+  listing.save()
 }
 
 // returns id of active Listing for specific NFT
