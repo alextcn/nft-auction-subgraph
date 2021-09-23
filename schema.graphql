@@ -1,4 +1,9 @@
-type Auction @entity {
+type ActiveListingID @entity {
+  id: ID!
+  listingId: ID!
+}
+
+type Listing @entity {
   id: ID!
 
   nft: Bytes!

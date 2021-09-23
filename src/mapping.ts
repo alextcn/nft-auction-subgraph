@@ -1,4 +1,4 @@
-import { BigInt, store } from "@graphprotocol/graph-ts"
+import { Address, BigInt, store } from "@graphprotocol/graph-ts"
 import {
   Auction as AuctionContract,
   AdminChanged,
@@ -15,63 +15,67 @@ import {
   Unpaused,
   WonNftClaimed
 } from "../generated/Auction/Auction"
-import { Auction } from "../generated/schema"
+import { ActiveListingID, Listing } from "../generated/schema"
 
 
 export function handleAuctionCreated(event: AuctionCreated): void {
-  const id = event.params.nft.toHexString() + '-' + event.params.nftId.toHexString()
+  const id = event.transaction.hash.toHex() + "-" + event.logIndex.toString()
 
-  const auction = new Auction(id)
-  auction.nft = event.params.nft
-  auction.nftId = event.params.nftId
-  auction.author = event.transaction.from
-  auction.endTimestamp = new BigInt(0)
+  const _id = new ActiveListingID(alid(event.params.nft, event.params.nftId))
+  _id.listingId = id
+  _id.save()
 
-  auction.save()
+  const listing = new Listing(id)
+  listing.nft = event.params.nft
+  listing.nftId = event.params.nftId
+  listing.author = event.transaction.from
+  listing.endTimestamp = new BigInt(0)
+  listing.save()
 }
 
 export function handleAuctionCanceled(event: AuctionCanceled): void {
-  const id = event.params.nft.toHexString() + '-' + event.params.nftId.toHexString()
-  
-  store.remove('Auction', id)
+  const id = findActiveNftListingId(event.params.nft, event.params.nftId)
+  if (id === null) return
+
+  store.remove('ActiveListingID', alid(event.params.nft, event.params.nftId))
+  store.remove('Listing', id)
 }
 
 export function handleBidSubmitted(event: BidSubmitted): void {
-  const id = event.params.nft.toHexString() + '-' + event.params.nftId.toHexString()
-
-  let auction = new Auction(id)
-
-  auction.bidder = event.params.bidder
-  auction.bid = event.params.amount
-  auction.endTimestamp = event.params.endTimestamp
-
-  auction.save()
+  const id = findActiveNftListingId(event.params.nft, event.params.nftId)
+  if (id === null) return
+  
+  const listing = new Listing(id)
+  listing.bidder = event.params.bidder
+  listing.bid = event.params.amount
+  listing.endTimestamp = event.params.endTimestamp
+  listing.save()
 }
 
 export function handleReservePriceChanged(event: ReservePriceChanged): void {
-  const id = event.params.nft.toHexString() + '-' + event.params.nftId.toHexString()
+  const id = findActiveNftListingId(event.params.nft, event.params.nftId)
+  if (id === null) return
 
-  let auction = new Auction(id)
-  auction.bid = event.params.startPrice
-  auction.save()
+  let listing = new Listing(id)
+  listing.bid = event.params.startPrice
+  listing.save()
 }
 
 export function handleWonNftClaimed(event: WonNftClaimed): void {
-  const id = event.params.nft.toHexString() + '-' + event.params.nftId.toHexString()
-
-  store.remove('Auction', id)
+  const id = findActiveNftListingId(event.params.nft, event.params.nftId)
+  if (id === null) return
+  
+  store.remove('ActiveListingID', alid(event.params.nft, event.params.nftId))
+  store.remove('Listing', id)
 }
 
-// export function handleAuctionDurationSet(event: AuctionDurationSet): void {}
+// returns id of active Listing for specific NFT
+function findActiveNftListingId(nft: Address, nftId: BigInt): string | null  {
+  const id = ActiveListingID.load(alid(nft, nftId))
+  return id ? id.listingId : null
+}
 
-// export function handleAuthorRoyaltyNumeratorSet(
-//   event: AuthorRoyaltyNumeratorSet
-// ): void {}
-
-export function handleMinPriceStepNumeratorSet(
-  event: MinPriceStepNumeratorSet
-): void {}
-
-export function handleOvertimeWindowSet(event: OvertimeWindowSet): void {}
-
-export function handleRoyaltyPaid(event: RoyaltyPaid): void {}
+// returns id of ActiveListingID for specific NFT
+function alid(nft: Address, nftId: BigInt): string {
+  return nft.toHexString() + '-' + nftId.toHexString()
+}
