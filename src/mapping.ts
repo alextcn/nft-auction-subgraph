@@ -33,7 +33,7 @@ export function handleAuctionCreated(event: AuctionCreated): void {
   listing.status = 'Created'
   listing.nft = nft.id
   listing.author = user.id
-  listing.endTimestamp = new BigInt(0)
+  listing.startPrice = event.params.startPrice
   listing.save()
 
   createAction(event, listing.id, user.id, nft.id, 'List')
@@ -75,7 +75,7 @@ export function handleReservePriceChanged(event: ReservePriceChanged): void {
   const user = createUser(event.transaction.from) // can be called by admin who hasn't been created before
 
   let listing = new Listing(id)
-  listing.bid = event.params.startPrice // TODO: set to startPrice
+  listing.startPrice = event.params.startPrice
   listing.save()
 
   // TODO: add price value

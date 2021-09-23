@@ -11,7 +11,8 @@ type Listing @entity {
   nft: NFT!
 
   status: ListingStatus!
-  endTimestamp: BigInt!
+  startPrice: BigInt!
+  endTimestamp: BigInt
 
   bidder: User
   bid: BigInt
