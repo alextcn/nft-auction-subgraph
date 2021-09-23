@@ -15,20 +15,28 @@ import {
   Unpaused,
   WonNftClaimed
 } from "../generated/Auction/Auction"
-import { ActiveListingID, Listing } from "../generated/schema"
+import { ActiveListingID, Listing, NFT } from "../generated/schema"
 
 
 export function handleAuctionCreated(event: AuctionCreated): void {
-  const id = event.transaction.hash.toHex() + "-" + event.logIndex.toString()
+  const _nftId = nftId(event.params.nft, event.params.nftId)
+  const listingId = event.transaction.hash.toHex() + "-" + event.logIndex.toString()
 
-  const _id = new ActiveListingID(alid(event.params.nft, event.params.nftId))
-  _id.listingId = id
+  const _id = new ActiveListingID(_nftId)
+  _id.listingId = listingId
   _id.save()
 
-  const listing = new Listing(id)
+  let nft = NFT.load(_nftId)
+  if (!nft) {
+    nft = new NFT(_nftId)
+    nft.address = event.params.nft
+    nft.tokenId = event.params.nftId
+    nft.save()
+  }
+
+  const listing = new Listing(listingId)
   listing.status = 'Created'
-  listing.nft = event.params.nft
-  listing.nftId = event.params.nftId
+  listing.nft = nft.id
   listing.author = event.transaction.from
   listing.endTimestamp = new BigInt(0)
   listing.save()
@@ -38,7 +46,7 @@ export function handleAuctionCanceled(event: AuctionCanceled): void {
   const id = findActiveNftListingId(event.params.nft, event.params.nftId)
   if (id === null) return
 
-  store.remove('ActiveListingID', alid(event.params.nft, event.params.nftId))
+  store.remove('ActiveListingID', nftId(event.params.nft, event.params.nftId))
 
   const listing = new Listing(id)
   listing.status = 'Cancelled'
@@ -70,20 +78,20 @@ export function handleWonNftClaimed(event: WonNftClaimed): void {
   const id = findActiveNftListingId(event.params.nft, event.params.nftId)
   if (id === null) return
   
-  store.remove('ActiveListingID', alid(event.params.nft, event.params.nftId))
+  store.remove('ActiveListingID', nftId(event.params.nft, event.params.nftId))
   
   const listing = new Listing(id)
   listing.status = 'Finished'
   listing.save()
 }
 
-// returns id of active Listing for specific NFT
-function findActiveNftListingId(nft: Address, nftId: BigInt): string | null  {
-  const id = ActiveListingID.load(alid(nft, nftId))
+// returns id of active Listing for specific NFT token
+function findActiveNftListingId(nft: Address, tokenId: BigInt): string | null  {
+  const id = ActiveListingID.load(nftId(nft, tokenId))
   return id ? id.listingId : null
 }
 
-// returns id of ActiveListingID for specific NFT
-function alid(nft: Address, nftId: BigInt): string {
-  return nft.toHexString() + '-' + nftId.toHexString()
+// returns string id of NFT token
+function nftId(nft: Address, tokenId: BigInt): string {
+  return nft.toHexString() + '-' + tokenId.toHexString()
 }

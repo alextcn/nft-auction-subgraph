@@ -9,8 +9,7 @@ type Listing @entity {
   id: ID!
   status: ListingStatus!
 
-  nft: Bytes!
-  nftId: BigInt!
+  nft: NFT!
 
   author: Bytes!
 
@@ -19,3 +18,20 @@ type Listing @entity {
 
   endTimestamp: BigInt!
 }
+
+type NFT @entity {
+  id: ID!
+  address: Bytes!
+  tokenId: BigInt!
+}
+
+# type User @entity {
+#   id: ID!
+#   # actions: [UserAction!] @derivedFrom(field: "user")
+# }
+
+# type UserAction @entity {
+#   id: ID!
+#   user: User!
+#   nft: 
+# }
