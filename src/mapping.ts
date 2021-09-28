@@ -1,4 +1,4 @@
-import { Address, BigInt, ethereum, store } from "@graphprotocol/graph-ts"
+import { Address, BigInt, ethereum, store, log } from "@graphprotocol/graph-ts"
 import {
   Auction as AuctionContract,
   AdminChanged,
@@ -46,7 +46,7 @@ export function handleAuctionCanceled(event: AuctionCanceled): void {
 
   store.remove('ActiveListingID', nftId)
 
-  const listing = new Listing(listingId)
+  const listing = Listing.load(listingId)!
   listing.status = 'Cancelled'
   listing.save()
 
@@ -58,7 +58,7 @@ export function handleBidSubmitted(event: BidSubmitted): void {
   const nftId = getNftId(event.params.nft, event.params.nftId)
   const bidder = createUser(event.transaction.from)
   
-  const listing = new Listing(listingId)
+  const listing = Listing.load(listingId)!
   listing.status = 'Active'
   listing.bidder = bidder.id
   listing.bid = event.params.amount
@@ -74,7 +74,7 @@ export function handleReservePriceChanged(event: ReservePriceChanged): void {
   const nftId = getNftId(event.params.nft, event.params.nftId)
   const user = createUser(event.transaction.from) // can be called by admin who hasn't been created before
 
-  let listing = new Listing(id)
+  let listing = Listing.load(id)!
   listing.startPrice = event.params.startPrice
   listing.save()
 
@@ -88,7 +88,7 @@ export function handleWonNftClaimed(event: WonNftClaimed): void {
   
   store.remove('ActiveListingID', nftId)
   
-  const listing = new Listing(listingId)
+  const listing = Listing.load(listingId)!
   listing.status = 'Finished'
   listing.save()
 
@@ -106,7 +106,7 @@ function findActiveNftListingId(nft: Address, tokenId: BigInt): string | null  {
 
 // returns string id of NFT token
 function getNftId(nft: Address, tokenId: BigInt): string {
-  return nft.toHexString() + '-' + tokenId.toHexString()
+  return nft.toHexString() + '-' + tokenId.toString()
 }
 
 // returns string id of User
@@ -138,8 +138,8 @@ function createNft(nftAddress: Address, tokenId: BigInt): NFT {
 }
 
 // create and saves Action entity
-function createAction(event: ethereum.Event, listingId: string, nftId: string, 
-  userId: string, actionType: string, value: BigInt | null): void {
+function createAction(event: ethereum.Event, listingId: string, userId: string, 
+  nftId: string, actionType: string, value: BigInt | null): void {
   const action = new Action(event.transaction.hash.toHex())
   action.user = userId
   action.nft = nftId
